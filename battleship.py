@@ -40,55 +40,54 @@ def print_board(board):
                 print('0 ',end="") 
         print('\r')
 
-
-def place(ships,board,coordinate,direct):
+def get_coordinates(coordinate):
     letter = coordinate[0].upper()
     row=string.ascii_uppercase.index(letter)
     column = int(coordinate[1])-1
+    return row,column
+
+def placing(board,row,column,ships,direct):  
+    board[row][column] = 1
+    if ships[0] == 2 and direct == 'v':
+        board[row+1][column] = 1
+    elif ships[0] == 2 and direct == 'h':
+        board[row][column+1] = 1
+           
+def place(ships,board,coordinate,direct):
+    row,column=get_coordinates(coordinate)
     while True:
         if board[row][column] == 1:
             print('This place is taken!')
-            coordinate,direct=get_input()
-            letter = coordinate[0].upper()
-            row=string.ascii_uppercase.index(letter)
-            column = int(coordinate[1])-1
+            coordinate,direct=valid_input()
+            row,column=get_coordinates(coordinate)
             continue      
+        elif ships[0] == 2 and row == 4 and direct =='v':
+            print('Ship is out of board!')
+            coordinate,direct=valid_input()
+            row,column=get_coordinates(coordinate)
+            continue  
+        elif ships[0] == 2 and column == 4 and direct == 'h':
+            print('Ship is out of board!')
+            coordinate,direct=valid_input()
+            row,column=get_coordinates(coordinate)
+            continue  
         elif row!=4  and row!=0 and column!=4 and board[row+1][column] == 0 and board[row-1][column] == 0  and board[row][column+1] == 0 and board[row][column-1] == 0:
-            board[row][column] = 1
-            if ships[0] == 2 and direct == 'v':
-                board[row+1][column] = 1
-            elif ships[0] == 2 and direct == 'h':
-                board[row][column+1] = 1
+            placing(board,row,column,ships,direct)  
             break
         elif row == 4 and board[row-1][column] == 0 and board[row][column+1] == 0 and board[row][column-1] == 0:
-            board[row][column] = 1
-            if ships[0] == 2 and direct == 'v':
-                board[row+1][column] = 1
-            elif ships[0] == 2 and direct == 'h':
-                board[row][column+1] = 1
+            placing(board,row,column,ships,direct)  
             break
         elif row == 0 and board[row+1][column] == 0 and board[row][column+1] == 0 and board[row][column-1] == 0:
-            board[row][column] = 1
-            if ships[0] == 2 and direct == 'v':
-                board[row+1][column] = 1
-            elif ships[0] == 2 and direct == 'h':
-                board[row][column+1] = 1
+            placing(board,row,column,ships,direct)  
             break
         elif column == 4 and board[row+1][column] == 0 and board[row][column-1] == 0 and board[row-1][column-1] == 0:
-            board[row][column] = 1
-            if ships[0] == 2 and direct == 'v':
-                board[row+1][column] = 1
-            elif ships[0] == 2 and direct == 'h':
-                board[row][column+1] = 1
+            placing(board,row,column,ships,direct)  
             break
         else:
             print('Ships are too close!')
-            coordinate,direct=get_input()
-            letter = coordinate[0].upper()
-            row=string.ascii_uppercase.index(letter)
-            column = int(coordinate[1])-1
+            coordinate,direct=valid_input()
+            row,column=get_coordinates(coordinate)
             continue      
-
 
 def place_ship(ships,board,coordinate,direct):
     if ships[0] == 1:
