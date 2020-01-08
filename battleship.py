@@ -4,9 +4,9 @@ import time
 
 def get_board():
     board = []
-    for row in range(5):
+    for row in range(7):
         board.append([])
-        for column in range(5):
+        for column in range(7):
             board[row].append(0)
     return board        
 
@@ -14,8 +14,11 @@ def valid_input():
     while True:
         coordinate,direct = get_input()
         if len(coordinate) == 2:
-            if (coordinate[0].upper() in string.ascii_uppercase[0:5] and int(coordinate[1]) in range(1,6)):
+            if (coordinate[0].upper() in string.ascii_uppercase[0:5] and int(coordinate[1]) in range(1,6)) and (direct == 'v' or direct == 'h'):
                 break
+            else:
+                print('Invalid input!')
+                continue 
         else:
             print('Invalid input!')
             continue 
@@ -31,9 +34,9 @@ def print_board(board):
     for number in range(1,6):
         print(str(number)+' ',end='')
     print('\r')    
-    for row in range(len(board)):
-        print(string.ascii_uppercase[row]+' ',end="") 
-        for column in range(len(board[row])):  
+    for row in range(1,len(board)-1):
+        print(string.ascii_uppercase[row-1]+' ',end="") 
+        for column in range(1,len(board[row])-1):  
             if board[row][column] == 1:
                 print('X ',end="")
             else:
@@ -42,8 +45,8 @@ def print_board(board):
 
 def get_coordinates(coordinate):
     letter = coordinate[0].upper()
-    row=string.ascii_uppercase.index(letter)
-    column = int(coordinate[1])-1
+    row=string.ascii_uppercase.index(letter)+1
+    column = int(coordinate[1])
     return row,column
 
 def placing(board,row,column,ships,direct):  
@@ -61,26 +64,7 @@ def place(ships,board,coordinate,direct):
             coordinate,direct=valid_input()
             row,column=get_coordinates(coordinate)
             continue      
-        elif ships[0] == 2 and row == 4 and direct =='v':
-            print('Ship is out of board!')
-            coordinate,direct=valid_input()
-            row,column=get_coordinates(coordinate)
-            continue  
-        elif ships[0] == 2 and column == 4 and direct == 'h':
-            print('Ship is out of board!')
-            coordinate,direct=valid_input()
-            row,column=get_coordinates(coordinate)
-            continue  
-        elif row!=4  and row!=0 and column!=4 and board[row+1][column] == 0 and board[row-1][column] == 0  and board[row][column+1] == 0 and board[row][column-1] == 0:
-            placing(board,row,column,ships,direct)  
-            break
-        elif row == 4 and board[row-1][column] == 0 and board[row][column+1] == 0 and board[row][column-1] == 0:
-            placing(board,row,column,ships,direct)  
-            break
-        elif row == 0 and board[row+1][column] == 0 and board[row][column+1] == 0 and board[row][column-1] == 0:
-            placing(board,row,column,ships,direct)  
-            break
-        elif column == 4 and board[row+1][column] == 0 and board[row][column-1] == 0 and board[row-1][column-1] == 0:
+        elif board[row+1][column] == 0 and board[row-1][column] == 0  and board[row][column+1] == 0 and board[row][column-1] == 0:
             placing(board,row,column,ships,direct)  
             break
         else:
@@ -89,19 +73,65 @@ def place(ships,board,coordinate,direct):
             row,column=get_coordinates(coordinate)
             continue      
 
+def place_horizontal(ships,board,coordinate,direct):
+    row,column=get_coordinates(coordinate)
+    while True:
+        if board[row][column] == 1 or board[row][column+1] == 1:
+            print('This place is taken!')
+            coordinate,direct=valid_input()
+            row,column=get_coordinates(coordinate)
+            continue   
+        elif column == 5:
+            print('Ship is out of board!')
+            coordinate,direct=valid_input()
+            row,column=get_coordinates(coordinate)
+            continue  
+        elif board[row][column-1] == 0 and board[row-1][column] == 0  and board[row-1][column+1] == 0 and board[row][column+2] == 0 and board[row+1][column+1] == 0 and board[row+1][column] == 0:
+            board[row][column] = 1
+            board[row][column+1] = 1
+            break
+        else:
+            print('Ships are too close!')
+            coordinate,direct=valid_input()
+            row,column=get_coordinates(coordinate)
+            continue 
+
+def place_vertical(ships,board,coordinate,direct):
+    row,column=get_coordinates(coordinate)
+    while True:
+        if board[row][column] == 1 or board[row+1][column] == 1:
+            print('This place is taken!')
+            coordinate,direct=valid_input()
+            row,column=get_coordinates(coordinate)
+            continue   
+        elif row == 5:
+            print('Ship is out of board!')
+            coordinate,direct=valid_input()
+            row,column=get_coordinates(coordinate)
+            continue  
+        elif board[row][column-1] == 0 and board[row+1][column-1] == 0  and board[row+2][column] == 0 and board[row+1][column+1] == 0 and board[row][column+1] == 0 and board[row-1][column] == 0:
+            board[row][column] = 1
+            board[row+1][column] = 1
+            break
+        else:
+            print('Ships are too close!')
+            coordinate,direct=valid_input()
+            row,column=get_coordinates(coordinate)
+            continue 
+
 def place_ship(ships,board,coordinate,direct):
     if ships[0] == 1:
        place(ships,board,coordinate,direct)
     else:
         if direct == 'v':
-            place(ships,board,coordinate,direct)
+            place_vertical(ships,board,coordinate,direct)
         else:
-            place(ships,board,coordinate,direct)
+            place_horizontal(ships,board,coordinate,direct)
     
 def player1_place():
     os.system('clear')
     player1 = get_board()
-    ships = [1,1,1,2,2]
+    ships = [2,1,1,2,2]
     while len(ships) != 0:
         print_board(player1)
         print(f"Your ship size is {ships[0]}")
@@ -109,11 +139,89 @@ def player1_place():
         place_ship(ships,player1,coordinate,direct)
         del ships[0]
         os.system('clear')        
-    print_board(player1)     
+    print_board(player1)   
+    return player1
+
+def player2_place():
+    os.system('clear')
+    player2 = get_board()
+    ships = [2,1,1,2,2]
+    while len(ships) != 0:
+        print_board(player2)
+        print(f"Your ship size is {ships[0]}")
+        coordinate,direct = valid_input()
+        place_ship(ships,player2,coordinate,direct)
+        del ships[0]
+        os.system('clear')        
+    print_board(player2)   
+    return player2
+
+def print_board_shoot(board):
+    print('  ',end="")
+    for number in range(1,6):
+        print(str(number)+' ',end='')
+    print('\r')    
+    for row in range(1,len(board)-1):
+        print(string.ascii_uppercase[row-1]+' ',end="") 
+        for column in range(1,len(board[row])-1):  
+            if board[row][column] == 0 or board[row][column] == 1:
+                print('0 ',end="")
+            elif board[row][column] == 2:
+                print('M ',end="") 
+            elif board[row][column] == 3:
+                print('H ',end="")    
+            else:
+                print('S ',end="")    
+        print('\r')   
+
+def valid_shoot():
+    while True:
+        coordinate = get_shoot()
+        if len(coordinate) == 2:
+            if (coordinate[0].upper() in string.ascii_uppercase[0:5] and int(coordinate[1]) in range(1,6)):
+                break
+            else:
+                print('Invalid input!')
+                continue 
+        else:
+            print('Invalid input!')
+            continue 
+    return coordinate    
+
+def get_shoot():
+    coordinate = input('Your coordinate: ')
+    return coordinate
+
+def shooting(player,coordinate):
+    row,column = get_coordinates(coordinate)
+    if player[row][colum] == 0:
+        print("You've missed!")
+        player[row][column] = 2
+    
+
+def shoot(player1,player2):
+    won=False
+    count=1
+    while won is False:
+        if count % 2 == 1:
+            print('Player 1 turn.')
+            coordinate=valid_shoot()
+            shooting(player1,coordinate)
+        else:
+            print('Player 2 turn.')
+            coordinate=valid_shoot()
+            shooting(player2,coordinate)
 
 def main():
     os.system('clear')
-    player1_place()
+    player1 = player1_place()
+    os.system('clear')
+    letter = input("Next player's placement phase") 
+    player2 = player2_place()
+    os.system('clear')
+    letter = input("Shooting phase") 
+    os.system('clear')
+    shoot(player1,player2)
 
 if __name__ == "__main__":
     main()                
