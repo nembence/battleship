@@ -132,29 +132,31 @@ def player1_place():
     os.system('clear')
     player1 = get_board()
     ships = [2,1,1,2,2]
+    countShips = sum(ships)
     while len(ships) != 0:
         print_board(player1)
-        print(f"Your ship size is {ships[0]}")
+        print(f"Your ship size is {ships[0]}.")
         coordinate,direct = valid_input()
         place_ship(ships,player1,coordinate,direct)
         del ships[0]
         os.system('clear')        
     print_board(player1)   
-    return player1
+    return player1, countShips
 
 def player2_place():
     os.system('clear')
     player2 = get_board()
     ships = [2,1,1,2,2]
+    countShips=sum(ships) 
     while len(ships) != 0:
         print_board(player2)
-        print(f"Your ship size is {ships[0]}")
+        print(f"Your ship size is {ships[0]}.")
         coordinate,direct = valid_input()
         place_ship(ships,player2,coordinate,direct)
         del ships[0]
         os.system('clear')        
-    print_board(player2)   
-    return player2
+    print_board(player2)  
+    return player2,countShips
 
 def print_board_shoot(board):
     print('  ',end="")
@@ -194,34 +196,70 @@ def get_shoot():
 
 def shooting(player,coordinate):
     row,column = get_coordinates(coordinate)
-    if player[row][colum] == 0:
-        print("You've missed!")
-        player[row][column] = 2
-    
+    while True:
+        if player[row][column] == 0:
+            print("You've missed!")
+            player[row][column] = 2
+            break
+        elif player[row][column] == 1 and (player[row+1][column] == 1 or player[row][column+1] == 1 or player[row-1][column] == 1 or player[row][column-1] == 1):
+            print('You\'ve hit a ship!')
+            player[row][column] = 3
+            break
+        elif player[row][column] == 1 and (player[row+1][column] == 3 or player[row-1][column] == 3 or player[row][column+1] == 3 or player[row][column-1] == 3):
+            print('You\'ve sunk a ship!')
+            player[row][column] = 4
+            player[row+1][column] = 4
+            break
+        elif player[row][column] == 1 and (player[row+1][column] == 0 or player[row+1][column] == 2) and (player[row-1][column] == 0 or player[row-1][column] == 2) and (player[row][column+1] == 0 or player[row-1][column] == 2) and (player[row][column-1] == 0 or player[row][column-1] == 2):
+            print('You\'ve sunk a ship!')
+            player[row][column] = 4
+            break
 
-def shoot(player1,player2):
+def check_win(player,countShips):
+    countSunks=0
+    for row in range(len(player)):
+        for column in range(len(player[row])):
+            if player[row][column] == 4:
+                countSunks+=1
+    print(countSunks)
+    if countSunks == countShips:
+        return True
+    else:
+        return False                
+        
+def shoot(player1,player2,countShips):
     won=False
     count=1
     while won is False:
         if count % 2 == 1:
+            os.system('clear')
+            print_board_shoot(player1)
             print('Player 1 turn.')
             coordinate=valid_shoot()
             shooting(player1,coordinate)
+            won=check_win(player1,countShips)
+            time.sleep(2)
+            os.system('clear')
         else:
+            print_board_shoot(player2)
             print('Player 2 turn.')
             coordinate=valid_shoot()
             shooting(player2,coordinate)
+            won=check_win(player2,countShips)
+            time.sleep(2)
+            os.system('clear')
+        count += 1    
 
 def main():
     os.system('clear')
-    player1 = player1_place()
+    player1, countShips = player1_place()
     os.system('clear')
     letter = input("Next player's placement phase") 
-    player2 = player2_place()
+    player2, countShips = player2_place()
     os.system('clear')
     letter = input("Shooting phase") 
     os.system('clear')
-    shoot(player1,player2)
+    shoot(player1,player2, countShips)
 
 if __name__ == "__main__":
     main()                
