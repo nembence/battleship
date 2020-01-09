@@ -14,13 +14,14 @@ def get_board(boardSize):
 def valid_input(boardSize):
     while True:
         coordinate,direct = get_input()
-        if len(coordinate) == 2:
-            if (coordinate[0].upper() in string.ascii_uppercase[0:boardSize] and int(coordinate[1]) in range(1,boardSize+1)) and (direct == 'v' or direct == 'h'):
-                break
-            else:
-                print('Invalid input!')
-                continue 
-        elif len(coordinate)==3 and coordinate[0].upper() in string.ascii_uppercase[0:boardSize] and int(coordinate[1]) == 1 and int(coordinate[2]) == 0 and (direct == 'v' or direct == 'h'):
+        if (direct == 'v' or direct == 'h') and coordinate[0].isalpha() and coordinate[1].isdigit():
+            if len(coordinate) == 2:
+                if (coordinate[0].upper() in string.ascii_uppercase[0:boardSize] and int(coordinate[1]) in range(1,boardSize+1)):
+                    break
+                else:
+                    print('Invalid input!')
+                    continue 
+            elif len(coordinate)==3 and coordinate[0].upper() in string.ascii_uppercase[0:boardSize] and int(coordinate[1]) == 1 and int(coordinate[2]) == 0:
                 break    
         else:
             print('Invalid input!')
@@ -38,13 +39,14 @@ def print_board(board,boardSize):
         print(str(number)+' ',end='')
     print('\r')    
     for row in range(1,len(board)-1):
-        print(string.ascii_uppercase[row-1]+' ',end="") 
+        print(string.ascii_uppercase[row-1]+'|',end="") 
         for column in range(1,len(board[row])-1):  
             if board[row][column] == 1:
-                print('X ',end="")
+                print('\33[31m'+'X'+'\033[0m'+'|',end="")
             else:
-                print('0 ',end="") 
+                print('0|',end="") 
         print('\r')
+    print('\r')    
 
 def get_coordinates(coordinate):
     if len(coordinate) == 2:
@@ -154,6 +156,8 @@ def player1_place(boardSize):
     ships = [random.randint(1,2) for i in range(boardSize)]
     countShips = sum(ships)
     while len(ships) != 0:
+        print('Player 1')
+        print('\r')  
         print_board(player1,boardSize)
         print(f"Your ship size is {ships[0]}.")
         coordinate,direct = valid_input(boardSize)
@@ -170,6 +174,8 @@ def player2_place(boardSize):
     ships = [random.randint(1,2) for i in range(boardSize)]
     countShips=sum(ships) 
     while len(ships) != 0:
+        print('Player 2')
+        print('\r')  
         print_board(player2,boardSize)
         print(f"Your ship size is {ships[0]}.")
         coordinate,direct = valid_input(boardSize)
@@ -189,26 +195,27 @@ def print_board_shoot(board,boardSize):
         print(string.ascii_uppercase[row-1]+' ',end="") 
         for column in range(1,len(board[row])-1):  
             if board[row][column] == 0 or board[row][column] == 1:
-                print('0 ',end="")
+                print('0|',end="")
             elif board[row][column] == 2:
-                print('M ',end="") 
+                print('\33[34m'+'M'+'\033[0m'+'|',end="") 
             elif board[row][column] == 3:
-                print('H ',end="")    
+                print('\33[33m'+'H'+'\033[0m'+'|',end="")    
             else:
-                print('S ',end="")    
+                print('\33[31m'+'S'+'\033[0m'+'|',end="")    
         print('\r')   
+    print('\r')       
 
 def valid_shoot(boardSize):
     while True:
         coordinate = get_shoot()
-        if len(coordinate) == 2:
+        if coordinate[0].isalpha() and coordinate[1].isdigit() and len(coordinate) == 2:
             if (coordinate[0].upper() in string.ascii_uppercase[0:boardSize] and int(coordinate[1]) in range(1,boardSize+1)):
-                break
+                    break
+            elif len(coordinate) == 3  and coordinate[0].upper() in string.ascii_uppercase[0:boardSize] and coordinate[1] == 1 and coordinate[2] ==0:
+                break  
             else:
                 print('Invalid input!')
-                continue 
-        elif len(coordinate) == 3  and coordinate[0].upper() in string.ascii_uppercase[0:boardSize] and coordinate[1] == 1 and coordinate[2] ==0:
-            break    
+                continue   
         else:
             print('Invalid input!')
             continue 
@@ -264,29 +271,80 @@ def check_win(player,countShips,playerNumber):
         os.system("clear")
         print(f"Player {playerNumber} wins!")
         print("Game over!")
-        time.sleep(4)
+        time.sleep(5)
         return True
     else:
         return False                
-        
+
+def get_limit():
+    print("Shooting phase") 
+    try:
+        limit=int(input('Number of turns: '))
+    except ValueError:
+        print('Invalid input!') 
+        limit=int(input('Number of turns: '))
+    while True:
+        if limit in range(5,51):
+            break
+        else:
+            print('Invalid input! (must be between 5-50)')
+            limit=int(input('Number of turns: '))
+            continue
+    return limit    
+
+def check_turn(limit,count): 
+    if limit != count:
+        print(f'Turns left: {limit-count}')
+        return False
+    else:
+        print('No more turns, it\'s a draw!')
+        time.sleep(5)
+        return True
+
+
 def shoot(player1,player2,countShips,boardSize):
+    limit=get_limit()
     won=False
+    turn=False
     count=1
-    while won is False:
+    used_player1=[]
+    used_player2=[]
+    while won is False and turn is False:
         if count % 2 == 1:
             os.system('clear')
+            print('Player 1')
+            print('\r')   
             print_board_shoot(player2,boardSize)
-            print('Player 1 turn.')
             coordinate=valid_shoot(boardSize)
+            while True:
+                if coordinate in used_player1:
+                    print('You already shoot this place!')
+                    coordinate=valid_shoot(boardSize)
+                    continue
+                else:
+                    break
+            used_player1.append(coordinate)    
             shooting(player2,coordinate)
+            turn=check_turn(limit,count)
             won=check_win(player2,countShips,1)
             time.sleep(2)
             os.system('clear')
         else:
+            os.system('clear')
+            print('Player 2')
+            print('\r')   
             print_board_shoot(player1,boardSize)
-            print('Player 2 turn.')
             coordinate=valid_shoot(boardSize)
+            while True:
+                if coordinate in used_player2:
+                    print('You already shoot this place!')
+                    coordinate=valid_shoot(boardSize)
+                    continue
+                else:
+                    break
+            used_player2.append(coordinate)    
             shooting(player1,coordinate)
+            turn=check_turn(limit,count)
             won=check_win(player1,countShips,2)
             time.sleep(2)
             os.system('clear')
@@ -298,10 +356,9 @@ def main():
     os.system('clear')
     player1, countShips = player1_place(boardSize)
     os.system('clear')
-    letter = input("Next player's placement phase") 
+    letter = input("Next player's placement phase")
     player2, countShips = player2_place(boardSize)
     os.system('clear')
-    letter = input("Shooting phase") 
     os.system('clear')
     shoot(player1,player2, countShips,boardSize)
 
