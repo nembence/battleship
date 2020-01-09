@@ -205,24 +205,42 @@ def shooting(player,coordinate):
             print('You\'ve hit a ship!')
             player[row][column] = 3
             break
-        elif player[row][column] == 1 and (player[row+1][column] == 3 or player[row-1][column] == 3 or player[row][column+1] == 3 or player[row][column-1] == 3):
+        elif player[row][column] == 1 and player[row+1][column] == 3:
             print('You\'ve sunk a ship!')
             player[row][column] = 4
             player[row+1][column] = 4
+            break
+        elif player[row][column] == 1 and player[row-1][column] == 3:
+            print('You\'ve sunk a ship!')
+            player[row][column] = 4
+            player[row-1][column] = 4
+            break
+        elif player[row][column] == 1 and player[row][column+1] == 3:
+            print('You\'ve sunk a ship!')
+            player[row][column] = 4
+            player[row][column+1] = 4
+            break
+        elif player[row][column] == 1 and player[row][column-1] == 3:
+            print('You\'ve sunk a ship!')
+            player[row][column] = 4
+            player[row][column-1] = 4
             break
         elif player[row][column] == 1 and (player[row+1][column] == 0 or player[row+1][column] == 2) and (player[row-1][column] == 0 or player[row-1][column] == 2) and (player[row][column+1] == 0 or player[row-1][column] == 2) and (player[row][column-1] == 0 or player[row][column-1] == 2):
             print('You\'ve sunk a ship!')
             player[row][column] = 4
             break
 
-def check_win(player,countShips):
+def check_win(player,countShips,playerNumber):
     countSunks=0
     for row in range(len(player)):
         for column in range(len(player[row])):
             if player[row][column] == 4:
                 countSunks+=1
-    print(countSunks)
     if countSunks == countShips:
+        os.system("clear")
+        print(f"Player {playerNumber} wins!")
+        print("Game over!")
+        time.sleep(4)
         return True
     else:
         return False                
@@ -237,7 +255,7 @@ def shoot(player1,player2,countShips):
             print('Player 1 turn.')
             coordinate=valid_shoot()
             shooting(player1,coordinate)
-            won=check_win(player1,countShips)
+            won=check_win(player1,countShips,1)
             time.sleep(2)
             os.system('clear')
         else:
@@ -245,7 +263,7 @@ def shoot(player1,player2,countShips):
             print('Player 2 turn.')
             coordinate=valid_shoot()
             shooting(player2,coordinate)
-            won=check_win(player2,countShips)
+            won=check_win(player2,countShips,2)
             time.sleep(2)
             os.system('clear')
         count += 1    
